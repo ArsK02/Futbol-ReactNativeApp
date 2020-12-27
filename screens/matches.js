@@ -2,30 +2,30 @@ import React, { Component } from 'react';
 import { StyleSheet, Text, View, Image, ScrollView, SafeAreaView } from 'react-native';
 import moment from 'moment';
 import localization from 'moment/locale/es';
+import { Picker } from '@react-native-picker/picker';
+
+//Components
+import Header from '../components/header';
 
 moment.updateLocale('es', localization);
 
-export default class Titles extends Component {
+export default class Matches extends Component {
   constructor() {
     super();
     this.state = {
       matches: [],
-      // teamsLogos: {},
-      // loadingMatches: false,
-      // loadingLogos: false
-      loading: false
+      loading: false,
+      selectedMachDay: 1,
+      currentMatchDay: 0,
+      matchDays: []
     };
   };
 
   componentDidMount = () => {
-    // this.setState({
-    //   loadingMatches: true,
-    //   loadingLogos: true
-    // });
     this.setState({
       loading: true
     });
-    fetch('https://api.football-data.org/v2/competitions/PD/matches?matchday=18', {
+    fetch('https://api.football-data.org/v2/competitions/PD/matches?matchday=' + this.state.selectedMachDay, {
       method: 'GET',
       headers: {
         'X-Auth-Token': '3c25023a9b924adbbe90793469260ad8'
@@ -35,38 +35,18 @@ export default class Titles extends Component {
       .then((response) => {
         this.setState({
           matches: response.matches,
-          // loadingMatches: false
-          loading: false
+          loading: false,
+          currentMatchDay: response.matches[0].season.currentMatchday
         });
       }).catch((error) => {
         console.log(error.message);
       });
-
-    // fetch('https://api.football-data.org/v2/competitions/PD/teams', {
-    //   method: 'GET',
-    //   headers: {
-    //     'X-Auth-Token': '3c25023a9b924adbbe90793469260ad8'
-    //   }
-    // })
-    //   .then((response) => response.json())
-    //   .then((response) => {
-    //     let changedTemsObj = {};
-    //     response.teams.forEach(element => {
-    //       changedTemsObj[element.id] = element.crestUrl;
-    //     });
-    //     this.setState({
-    //       teamsLogos: changedTemsObj,
-    //       loadingLogos: false
-    //     });
-    //     console.log(this.state.teamsLogos)
-    //   }).catch((error) => {
-    //     console.log(error.message);
-    //   });
   }
 
   render() {
+    const state = this.state;
     let match;
-    //let logos;
+    let matchDayOption;
     let teamLogos = {
       77: require('../img/logos/atleticbilbao.png'),
       78: require('../img/logos/atleticomadrid.png'),
@@ -89,14 +69,19 @@ export default class Titles extends Component {
       558: require('../img/logos/celta.png'),
       559: require('../img/logos/sevilla.png')
     };
-    if (!this.state.loading) {
-      //logos = this.state.teamsLogos;
-      match = this.state.matches.map(function (match, index) {
+    if (!state.loading) {
+      match = state.matches.map(function (match, index) {
         return (
           <View key={index} style={styles.matchItem}>
             <View style={styles.matchTeams}>
-              <Text><Image style={{ width: 20, height: 20 }} source={teamLogos[match.homeTeam.id]} /> {match.homeTeam.name}</Text>
-              <Text><Image style={{ width: 20, height: 20 }} source={teamLogos[match.awayTeam.id]} /> {match.awayTeam.name}</Text>
+              <View style={styles.team}>
+                <Image style={styles.teamLogo} source={teamLogos[match.homeTeam.id]} />
+                <Text style={styles.teamName}>{match.homeTeam.name}</Text>
+              </View>
+              <View style={styles.team}>
+                <Image style={styles.teamLogo} source={teamLogos[match.awayTeam.id]} />
+                <Text style={styles.teamName}>{match.awayTeam.name}</Text>
+              </View>
             </View>
             <View style={styles.matchSchedule}>
               <Text style={styles.matchDate}>{moment(match.utcDate).format('DD MMM')}</Text>
@@ -105,6 +90,18 @@ export default class Titles extends Component {
           </View>
         );
       });
+      if(state.currentMatchDay > 0) {
+        for (let i = 1; i <= state.currentMatchDay; i++) {
+          state.matchDays.push(i)
+        }
+      }
+      if(!matchDayOption) {
+        matchDayOption = state.matchDays.map(function (i) {
+          return (
+            <Picker.Item label={'Jornada ' + i} value={i} key={i} />
+          )
+        })
+      }
     } else {
       match = <Text style={{ textAlign: 'center' }}>Cargando...</Text>;
     }
@@ -112,10 +109,20 @@ export default class Titles extends Component {
       <SafeAreaView style={styles.pageContainer}>
         <ScrollView>
           <View style={styles.container}>
-            <View style={styles.header}>
-              <Image style={styles.logo} source={require('../img/laliga.png')} />
+            <Header></Header>
+            <View style={styles.matchesContainer}>
+              <Picker
+                selectedValue={this.state.selectedMachDay}
+                style={{ height: 50, width: 140, alignSelf: 'flex-end' }}
+                onValueChange={(itemValue) => {
+                  this.setState({ selectedMachDay: itemValue, matchDays: [], loading: true });
+                  this.componentDidMount();
+                }
+                }>
+                {matchDayOption}
+              </Picker>
+              {match}
             </View>
-            <View style={styles.matchesContainer}>{match}</View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -130,25 +137,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 25,
-    paddingHorizontal: 15
-  },
-  header: {
-    height: 50,
-    alignSelf: 'stretch',
-    marginBottom: 50,
-    textAlign: 'center',
-  },
-  logo: {
-    alignSelf: 'center',
-    height: 50,
-    width: 150,
-    marginVertical: 15
+    paddingVertical: 25
   },
   matchesContainer: {
     flex: 1,
-    //alignSelf: 'stretch',
-    width: '80%',
+    width: '85%',
     maxWidth: 860
   },
   matchItem: {
@@ -157,7 +150,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#d3ebd4',
+    backgroundColor: '#DBF0DC',
     borderBottomColor: '#bbb',
     borderBottomWidth: 1
   },
@@ -166,6 +159,18 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: '#bbb'
   },
+  team: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 5
+  },
+  teamLogo: {
+    width: 20,
+    height: 20
+  },
+  teamName: {
+    paddingHorizontal: 5
+  },
   matchSchedule: {
     flexGrow: 1
   },
@@ -173,4 +178,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold'
   }
-})
+});
