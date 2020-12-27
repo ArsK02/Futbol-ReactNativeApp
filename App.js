@@ -1,21 +1,29 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import * as React from 'react';
+import { Text, View, SafeAreaView } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Matches from './screens/matches';
+import Classification from './screens/classification';
+
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <Tab.Navigator tabBarOptions={{
+          style: {
+            justifyContent: 'center',
+          },
+          tabStyle: {
+            backgroundColor: '#fff',
+            justifyContent: 'center',
+          },
+        }}>
+          <Tab.Screen name="Partidos" component={Matches} />
+          <Tab.Screen name="Clasificación" component={Classification} />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
