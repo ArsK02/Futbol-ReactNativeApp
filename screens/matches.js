@@ -47,6 +47,7 @@ export default class Matches extends Component {
     const state = this.state;
     let match;
     let matchDayOption;
+    let matchDayOptions = [];
     let teamLogos = {
       77: require('../img/logos/atleticbilbao.png'),
       78: require('../img/logos/atleticomadrid.png'),
@@ -90,18 +91,17 @@ export default class Matches extends Component {
           </View>
         );
       });
-      if(state.currentMatchDay > 0) {
-        for (let i = 1; i <= state.currentMatchDay; i++) {
-          state.matchDays.push(i)
-        }
+      if (state.currentMatchDay > 0) {
+        for (let i = 1; i <= 38; i++) {
+        matchDayOptions.push(<Picker.Item label={'Jornada ' + i} value={i} key={i} />)
       }
-      if(!matchDayOption) {
-        matchDayOption = state.matchDays.map(function (i) {
-          return (
-            <Picker.Item label={'Jornada ' + i} value={i} key={i} />
-          )
-        })
       }
+      // matchDayOption = state.matchDays.map(function (item, index) {
+      //   console.log(item)
+      //   return (
+      //     <Picker.Item label={'Jornada ' + item} value={item} key={index} />
+      //   )
+      // })
     } else {
       match = <Text style={{ textAlign: 'center' }}>Cargando...</Text>;
     }
@@ -114,12 +114,12 @@ export default class Matches extends Component {
               <Picker
                 selectedValue={this.state.selectedMachDay}
                 style={{ height: 50, width: 140, alignSelf: 'flex-end' }}
-                onValueChange={(itemValue) => {
+                onValueChange={(itemValue, itemIndex) => {
                   this.setState({ selectedMachDay: itemValue, matchDays: [], loading: true });
                   this.componentDidMount();
                 }
                 }>
-                {matchDayOption}
+                {matchDayOptions}
               </Picker>
               {match}
             </View>

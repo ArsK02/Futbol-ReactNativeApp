@@ -11,10 +11,7 @@ export default class Classification extends Component {
     this.state = {
       teams: [],
       loading: false,
-      tableHead: ['#', 'Equipo', 'PT', 'PJ', 'PG', 'PE', 'PP'],
-      tableData: [
-        ['1', 'Atletic', '30', '16', '14', '1', '1'],
-      ]
+      tableHead: ['#', 'Equipo', 'PT', 'PJ', 'PG', 'PE', 'PP']
     };
   };
 
